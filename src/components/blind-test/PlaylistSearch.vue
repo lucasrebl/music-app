@@ -1,187 +1,72 @@
 <template>
   <div class="playlist-search">
-    <div class="search-header">
-      <h2>🎵 Sélection de la musique</h2>
-      <p>Choisissez la source musicale pour votre blind test</p>
-    </div>
+    <SearchHeader />
 
-    <!-- Sources sélectionnées (playlists + artistes) -->
-    <div v-if="selectedPlaylists.length || selectedArtists.length" class="selected-playlist">
-      <h3>Sources sélectionnées</h3>
+    <SelectedSources
+      :selectedPlaylists="selectedPlaylists"
+      :selectedArtists="selectedArtists"
+      :loading="loading"
+      :areSettingsValid="areSettingsValid"
+      @remove-playlist="removeSelectedPlaylist"
+      @remove-artist="removeSelectedArtist"
+      @clear-selections="clearSelections"
+      @confirm-playlist="confirmPlaylist"
+    />
 
-      <div class="sources-grid">
-        <div v-for="pl in selectedPlaylists" :key="`playlist-${pl.id}`" class="source-item">
-          <img :src="pl.picture_medium" :alt="pl.title" class="source-image">
-          <div class="source-info">
-            <h4 class="source-title">{{ pl.title }}</h4>
-            <p class="source-details">{{ pl.creator?.name }} • {{ pl.nb_tracks }} titres</p>
-          </div>
-          <button @click="removeSelectedPlaylist(pl.id)" class="remove-btn" title="Supprimer cette playlist">
-            ✕
-          </button>
-        </div>
-        
-        <div v-for="art in selectedArtists" :key="`artist-${art.id}`" class="source-item">
-          <img :src="art.picture_medium" :alt="art.name" class="source-image">
-          <div class="source-info">
-            <h4 class="source-title">{{ art.name }}</h4>
-            <p class="source-details">{{ art.nb_fan }} fans</p>
-          </div>
-          <button @click="removeSelectedArtist(art.id)" class="remove-btn" title="Supprimer cet artiste">
-            ✕
-          </button>
-        </div>
-      </div>
-
-      <div class="playlist-actions">
-        <button
-          class="btn btn-secondary"
-          @click="clearSelections"
-        >
-          Effacer
-        </button>
-        <button
-          class="btn btn-primary"
-          @click="confirmPlaylist"
-          :disabled="loading || !areSettingsValid"
-        >
-          {{ loading ? 'Chargement...' : 'Valider et commencer le jeu' }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Tabs de sélection -->
-    <div class="search-tabs">
-      <button
-        :class="['tab-button', { active: activeTab === 'url' }]"
-        @click="activeTab = 'url'"
-      >
-        🔗 URL Playlist
-      </button>
-      <button
-        :class="['tab-button', { active: activeTab === 'search' }]"
-        @click="activeTab = 'search'"
-      >
-        🔍 Rechercher
-      </button>
-      <button
-        :class="['tab-button', { active: activeTab === 'artist', disabled: isArtistTabDisabled }]"
-        @click="!isArtistTabDisabled && (activeTab = 'artist')"
-        :disabled="isArtistTabDisabled"
-        :title="isArtistTabDisabled ? 'Désactivé car seule la validation par artiste est cochée' : ''"
-      >
-        👤 Artiste
-      </button>
-    </div>
-
-    <!-- Message d'information si l'onglet artiste est désactivé -->
-    <div v-if="isArtistTabDisabled" class="info-message">
-      ℹ️ L'onglet Artiste est désactivé car vous avez choisi de ne valider que par artiste. 
-      Sélectionner un artiste unique rendrait le jeu impossible (même réponse pour tous les titres).
-    </div>
+    <SearchTabs
+      v-model:activeTab="activeTab"
+      :isArtistTabDisabled="isArtistTabDisabled"
+    />
 
     <!-- Contenu des tabs -->
     <div class="tab-content">
-      <!-- Tab URL -->
-      <div v-if="activeTab === 'url'" class="url-section">
-        <div class="form-group">
-          <label for="playlistUrl">URL de la playlist Deezer</label>
-          <input
-            id="playlistUrl"
-            v-model="playlistUrl"
-            type="url"
-            placeholder="https://www.deezer.com/fr/playlist/123456789"
-            @input="validateUrl"
-          />
-          <small v-if="urlError" class="error">{{ urlError }}</small>
-          <small v-else>Collez l'URL de n'importe quelle playlist publique Deezer</small>
-        </div>
-        
-        <button
-          class="btn btn-primary"
-          @click="loadPlaylistFromUrl"
-          :disabled="!isValidUrl || loading"
-        >
-          {{ loading ? 'Chargement...' : 'Charger la playlist' }}
-        </button>
-      </div>
+      <UrlSearch
+        v-if="activeTab === 'url'"
+        v-model:playlistUrl="playlistUrl"
+        :urlError="urlError"
+        :isValidUrl="isValidUrl"
+        :loading="loading"
+        @load-playlist="loadPlaylistFromUrl"
+      />
 
-      <!-- Tab Recherche -->
-      <div v-if="activeTab === 'search'" class="search-section">
-        <div class="form-group">
-          <label for="searchQuery">Rechercher une playlist</label>
-          <input
-            id="searchQuery"
-            v-model="searchQuery"
-            type="text"
-            placeholder="Ex: Top Hits, Pop français, Rock classics..."
-            @input="debounceSearch"
-          />
-        </div>
-        
-        <div v-if="searchResults.length" class="results-grid">
-          <div
-            v-for="playlist in searchResults"
-            :key="playlist.id"
-            :class="['playlist-card', { selected: isPlaylistSelected(playlist) }]"
-            @click="selectPlaylist(playlist)"
-          >
-            <img :src="playlist.picture_medium" :alt="playlist.title" />
-            <div class="playlist-info">
-              <h4>{{ playlist.title }}</h4>
-              <p>{{ playlist.nb_tracks }} titres</p>
-              <small>Par {{ playlist.creator?.name || 'Inconnu' }}</small>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PlaylistSearchTab
+        v-if="activeTab === 'search'"
+        v-model:searchQuery="searchQuery"
+        :searchResults="searchResults"
+        :selectedPlaylists="selectedPlaylists"
+        @select-playlist="selectPlaylist"
+      />
 
-      <!-- Tab Artiste -->
-      <div v-if="activeTab === 'artist'" class="artist-section">
-        <div class="form-group">
-          <label for="artistQuery">Rechercher un artiste</label>
-          <input
-            id="artistQuery"
-            v-model="artistQuery"
-            type="text"
-            placeholder="Ex: Daft Punk, Édith Piaf, The Beatles..."
-            @input="debounceArtistSearch"
-          />
-        </div>
-        
-        <div v-if="artistResults.length" class="results-grid">
-          <div
-            v-for="artist in artistResults"
-            :key="artist.id"
-            :class="['artist-card', { selected: isArtistSelected(artist) }]"
-            @click="selectArtist(artist)"
-          >
-            <img :src="artist.picture_medium" :alt="artist.name" />
-            <div class="artist-info">
-              <h4>{{ artist.name }}</h4>
-              <p>{{ artist.nb_album }} albums</p>
-              <small>{{ artist.nb_fan }} fans</small>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ArtistSearch
+        v-if="activeTab === 'artist'"
+        v-model:artistQuery="artistQuery"
+        :artistResults="artistResults"
+        :selectedArtists="selectedArtists"
+        @select-artist="selectArtist"
+      />
     </div>
 
-    <!-- Messages d'erreur -->
-    <div v-if="error" class="error-message">
-      <p>{{ error }}</p>
-      <button class="btn btn-secondary" @click="error = ''">
-        Fermer
-      </button>
-    </div>
+    <ErrorMessage
+      :error="error"
+      @clear-error="error = ''"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { deezerService, type DeezerPlaylist, type DeezerArtist, type DeezerTrack } from '@/services/deezerService'
 import type { GameSettings } from '@/types/blindTest'
 import { DEFAULT_GAME_SETTINGS } from '@/types/blindTest'
+
+// Composants
+import SearchHeader from './playlist-search/SearchHeader.vue'
+import SelectedSources from './playlist-search/SelectedSources.vue'
+import SearchTabs from './playlist-search/SearchTabs.vue'
+import UrlSearch from './playlist-search/UrlSearch.vue'
+import PlaylistSearchTab from './playlist-search/PlaylistSearchTab.vue'
+import ArtistSearch from './playlist-search/ArtistSearch.vue'
+import ErrorMessage from './playlist-search/ErrorMessage.vue'
 
 interface Emits {
   (e: 'playlist-selected', data: { playlist: DeezerPlaylist, tracks: DeezerTrack[] }): void
@@ -236,6 +121,11 @@ const artistTracks = ref<Record<number, DeezerTrack[]>>({})
 
 let searchTimeout: number | null = null
 let artistSearchTimeout: number | null = null
+
+// Watchers
+watch(() => playlistUrl.value, validateUrl)
+watch(() => searchQuery.value, debounceSearch)
+watch(() => artistQuery.value, debounceArtistSearch)
 
 // Lifecycle
 onMounted(() => {
@@ -499,317 +389,10 @@ function formatDuration(seconds: number): string {
   padding: var(--spacing-xl);
 }
 
-.search-header {
-  text-align: center;
-  margin-bottom: var(--spacing-2xl);
-}
-
-.search-header h2 {
-  font-size: var(--font-size-3xl);
-  margin-bottom: var(--spacing-md);
-  color: var(--spotify-white);
-}
-
-.search-header p {
-  color: var(--spotify-light-gray);
-  font-size: var(--font-size-lg);
-}
-
-.search-tabs {
-  display: flex;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-2xl);
-}
-
-.tab-button {
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--spotify-gray);
-  color: var(--spotify-light-gray);
-  border: 1px solid var(--spotify-gray);
-  border-radius: var(--border-radius-md);
-  font-weight: 600;
-  transition: var(--transition-base);
-}
-
-.tab-button.active {
-  background: var(--spotify-green);
-  color: var(--spotify-black);
-  border-color: var(--spotify-green);
-}
-
-.tab-button:hover:not(.active):not(.disabled) {
-  background: var(--spotify-light-gray);
-  color: var(--spotify-black);
-}
-
-.tab-button.disabled {
-  background: var(--spotify-dark-gray);
-  color: var(--spotify-gray);
-  border-color: var(--spotify-dark-gray);
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.info-message {
-  background: var(--spotify-dark-gray);
-  border: 1px solid var(--spotify-gray);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-  color: var(--spotify-light-gray);
-  font-size: var(--font-size-sm);
-  text-align: center;
-}
-
-.tab-content {
-  background: var(--spotify-dark-gray);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-xl);
-  margin-bottom: var(--spacing-2xl);
-}
-
-.form-group {
-  margin-bottom: var(--spacing-lg);
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: var(--spacing-sm);
-  font-weight: 600;
-  color: var(--spotify-white);
-}
-
-.form-group input {
-  width: 100%;
-  padding: var(--spacing-md);
-  background: var(--spotify-gray);
-  border: 1px solid var(--spotify-light-gray);
-  border-radius: var(--border-radius-md);
-  color: var(--spotify-white);
-  font-size: var(--font-size-base);
-}
-
-.form-group input:focus {
-  border-color: var(--spotify-green);
-  outline: none;
-}
-
-.form-group small {
-  display: block;
-  margin-top: var(--spacing-xs);
-  color: var(--spotify-light-gray);
-  font-size: var(--font-size-sm);
-}
-
-.form-group small.error {
-  color: var(--color-error);
-}
-
-.results-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: var(--spacing-lg);
-  margin-top: var(--spacing-lg);
-}
-
-.playlist-card, .artist-card {
-  background: var(--spotify-gray);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-md);
-  cursor: pointer;
-  transition: var(--transition-base);
-  border: 2px solid transparent;
-}
-
-.playlist-card:hover, .artist-card:hover {
-  background: var(--spotify-light-gray);
-  color: var(--spotify-black);
-}
-
-.playlist-card.selected, .artist-card.selected {
-  border-color: var(--spotify-green);
-}
-
-.playlist-card img, .artist-card img {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: var(--border-radius-md);
-  margin-bottom: var(--spacing-sm);
-  object-fit: cover;
-}
-
-.playlist-info h4, .artist-info h4 {
-  font-size: var(--font-size-lg);
-  margin-bottom: var(--spacing-xs);
-  font-weight: 600;
-}
-
-.playlist-info p, .artist-info p {
-  color: var(--spotify-light-gray);
-  margin-bottom: var(--spacing-xs);
-}
-
-.playlist-info small, .artist-info small {
-  color: var(--spotify-light-gray);
-  font-size: var(--font-size-sm);
-}
-
-.selected-playlist {
-  background: var(--spotify-dark-gray);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-xl);
-  border: 2px solid var(--spotify-green);
-  margin-bottom: var(--spacing-2xl);
-}
-
-.selected-playlist h3 {
-  color: var(--spotify-green);
-  margin-bottom: var(--spacing-lg);
-  text-align: center;
-}
-
-.sources-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xl);
-}
-
-.source-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  background: var(--spotify-gray);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-md);
-  position: relative;
-}
-
-.source-image {
-  width: 50px;
-  height: 50px;
-  border-radius: var(--border-radius-sm);
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.source-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.source-title {
-  margin: 0;
-  font-size: var(--font-size-base);
-  font-weight: 600;
-  color: var(--spotify-white);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.source-details {
-  margin: 0;
-  color: var(--spotify-light-gray);
-  font-size: var(--font-size-sm);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.remove-btn {
-  background: var(--spotify-dark-gray);
-  color: var(--spotify-light-gray);
-  border: 1px solid var(--spotify-gray);
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: var(--transition-base);
-  font-size: 12px;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-.remove-btn:hover {
-  background: var(--color-error);
-  color: white;
-  border-color: var(--color-error);
-  transform: scale(1.1);
-}
-
-.playlist-details h4 {
-  font-size: var(--font-size-xl);
-  margin-bottom: var(--spacing-sm);
-  color: var(--spotify-white);
-}
-
-.playlist-details p {
-  color: var(--spotify-light-gray);
-  margin-bottom: var(--spacing-sm);
-}
-
-.playlist-details small {
-  color: var(--spotify-light-gray);
-  font-style: italic;
-}
-
-.playlist-actions {
-  display: flex;
-  gap: var(--spacing-lg);
-  justify-content: center;
-}
-
-.playlist-actions .btn {
-  flex: 1;
-  max-width: 200px;
-}
-
-.error-message {
-  background: var(--color-error);
-  color: white;
-  padding: var(--spacing-lg);
-  border-radius: var(--border-radius-md);
-  text-align: center;
-  margin-top: var(--spacing-lg);
-}
-
-.error-message .btn {
-  margin-top: var(--spacing-md);
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .playlist-search {
     padding: var(--spacing-lg);
-  }
-  
-  .search-tabs {
-    flex-direction: column;
-  }
-  
-  .results-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-  
-  .sources-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .source-item {
-    padding: var(--spacing-sm);
-  }
-  
-  .playlist-actions {
-    flex-direction: column;
-  }
-  
-  .playlist-actions .btn {
-    max-width: none;
   }
 }
 </style>

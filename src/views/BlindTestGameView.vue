@@ -99,7 +99,7 @@ function onGameFinished(data: {
 function onGameStopped() {
   // S'assurer que le jeu est bien arrêté avant de rediriger
   setTimeout(() => {
-    router.push('/blind-test/playlist')
+    router.push('/blind-test/settings')
   }, 100)
 }
 </script>
