@@ -13,19 +13,57 @@
 
     <!-- Objectifs de la partie -->
     <div v-if="settings" class="objectives-section">
-      <h3>🎯 Objectifs définis</h3>
+      <div class="objectives-header">
+        <div class="objectives-icon">🎯</div>
+        <h3>Objectifs définis</h3>
+      </div>
       <div class="objectives-grid">
         <div class="objective-card">
-          <div class="objective-label">Points pour gagner</div>
-          <div class="objective-value">{{ settings.targetScore }}</div>
+          <div class="objective-icon">🏆</div>
+          <div class="objective-content">
+            <div class="objective-value">{{ settings.targetScore }}</div>
+            <div class="objective-label">Points pour gagner</div>
+          </div>
         </div>
         <div class="objective-card">
-          <div class="objective-label">Nombre maximum de titres</div>
-          <div class="objective-value">{{ settings.maxTracks }}</div>
+          <div class="objective-icon">🎵</div>
+          <div class="objective-content">
+            <div class="objective-value">{{ settings.maxTracks }}</div>
+            <div class="objective-label">Titres maximum</div>
+          </div>
         </div>
         <div class="objective-card">
-          <div class="objective-label">Durée par piste (s)</div>
-          <div class="objective-value">{{ settings.trackDuration }}</div>
+          <div class="objective-icon">⏱️</div>
+          <div class="objective-content">
+            <div class="objective-value">{{ settings.trackDuration }}s</div>
+            <div class="objective-label">Durée par titre</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sources sélectionnées -->
+    <div v-if="selectedPlaylists?.length || selectedArtists?.length" class="sources-section">
+      <h3>📚 Sources sélectionnées</h3>
+      <div class="sources-grid">
+        <div v-if="selectedPlaylists?.length" class="sources-column">
+          <h4>Playlists</h4>
+          <ul>
+            <li v-for="pl in selectedPlaylists" :key="pl.id">
+              <strong>{{ pl.title }}</strong>
+              <div class="source-meta">{{ pl.nb_tracks }} titres</div>
+            </li>
+          </ul>
+        </div>
+
+        <div v-if="selectedArtists?.length" class="sources-column">
+          <h4>Artistes</h4>
+          <ul>
+            <li v-for="ar in selectedArtists" :key="ar.id">
+              <strong>{{ ar.name }}</strong>
+              <div class="source-meta">{{ ar.nb_album }} albums — {{ ar.nb_fan }} fans</div>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -69,25 +107,25 @@
             <p>{{ result.track.artist.name }}</p>
           </div>
           
-          <div class="player-answer">
-            <div class="answer-text">
-              {{ result.playerAnswer || 'Pas de réponse' }}
+          <div class="answer-section">
+            <div class="answer-and-stats">
+              <div class="track-stats">
+                <span class="points">{{ result.points }} pts</span>
+                <span class="time">{{ (result.timeToAnswer / 1000).toFixed(1) }}s</span>
+              </div>
             </div>
-            <div class="answer-status">
-              {{ result.isCorrect ? '✅ Correct' : '❌ Incorrect' }}
+
+            <div class="mistakes" v-if="result.attempts && result.attempts.length">
+              <div class="mistakes-list">
+                <span
+                  v-for="(a, i) in result.attempts"
+                  :key="i"
+                  :class="['mistake-chip', { 'mistake-last': i === result.attempts.length - 1 }]"
+                >
+                  {{ a }}
+                </span>
+              </div>
             </div>
-          </div>
-          
-          <div class="mistakes" v-if="result.attempts && result.attempts.length">
-            <div class="mistakes-label">Erreurs :</div>
-            <ul class="mistakes-list">
-              <li v-for="(a, i) in result.attempts" :key="i">{{ a }}</li>
-            </ul>
-          </div>
-          
-          <div class="track-stats">
-            <div class="points">{{ result.points }} pts</div>
-            <div class="time">{{ (result.timeToAnswer / 1000).toFixed(1) }}s</div>
           </div>
         </div>
       </div>
@@ -114,12 +152,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { TrackResult, GameEndReason, GameSettings as GameSettingsType } from '@/types/blindTest'
+import type { DeezerPlaylist, DeezerArtist } from '@/services/deezerService'
 
 interface Props {
   finalScore: number
   results: TrackResult[]
   endReason: GameEndReason
   settings?: GameSettingsType
+  selectedPlaylists?: DeezerPlaylist[]
+  selectedArtists?: DeezerArtist[]
 }
 
 interface Emits {
@@ -216,38 +257,113 @@ const endReasonText = computed(() => {
 }
 
 .objectives-section {
-  background: var(--spotify-dark-gray);
+  background: linear-gradient(135deg, rgba(29, 185, 84, 0.08) 0%, rgba(29, 185, 84, 0.02) 100%);
+  border: 1px solid rgba(29, 185, 84, 0.12);
   border-radius: var(--border-radius-lg);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-xl);
   margin-bottom: var(--spacing-2xl);
+  position: relative;
+  overflow: hidden;
+}
+
+.objectives-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--spotify-green) 0%, rgba(29, 185, 84, 0.5) 100%);
+}
+
+.objectives-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+  justify-content: center;
+}
+
+.objectives-icon {
+  font-size: 2rem;
+  filter: drop-shadow(0 0 8px rgba(29, 185, 84, 0.3));
+}
+
+.objectives-header h3 {
+  color: var(--spotify-white);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin: 0;
 }
 
 .objectives-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--spacing-lg);
-  justify-content: center;
-  flex-wrap: wrap;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .objective-card {
-  background: var(--spotify-gray);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-radius: var(--border-radius-md);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
   text-align: center;
-  min-width: 160px;
-  border: 1px solid var(--spotify-light-gray);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.objective-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.objective-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(29, 185, 84, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.objective-card:hover::before {
+  opacity: 1;
+}
+
+.objective-icon {
+  font-size: 1.8rem;
+  margin-bottom: var(--spacing-sm);
+  display: block;
+  filter: drop-shadow(0 0 6px rgba(29, 185, 84, 0.2));
+}
+
+.objective-content {
+  position: relative;
+  z-index: 1;
+}
+
+.objective-value {
+  color: var(--spotify-green);
+  font-weight: 700;
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--spacing-xs);
+  text-shadow: 0 0 20px rgba(29, 185, 84, 0.3);
 }
 
 .objective-label {
   color: var(--spotify-light-gray);
   font-size: var(--font-size-sm);
-  margin-bottom: var(--spacing-xs);
-}
-
-.objective-value {
-  color: var(--spotify-white);
-  font-weight: 700;
-  font-size: var(--font-size-xl);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .stats-section h3 {
@@ -292,6 +408,66 @@ const endReasonText = computed(() => {
   margin-bottom: var(--spacing-3xl);
 }
 
+.sources-section {
+  background: var(--spotify-dark-gray);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.sources-grid {
+  display: flex;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.sources-column h4 {
+  color: var(--spotify-green);
+  margin-bottom: var(--spacing-sm);
+}
+
+.sources-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sources-column li {
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px dashed rgba(255,255,255,0.03);
+}
+
+.source-meta {
+  color: var(--spotify-light-gray);
+  font-size: var(--font-size-sm);
+}
+
+.mistakes {
+  margin-top: var(--spacing-sm);
+}
+
+.mistakes-list {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.mistake-chip {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.04);
+  color: var(--spotify-light-gray);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.mistake-chip.mistake-last {
+  background: rgba(255,90,100,0.12);
+  border-color: rgba(255,90,100,0.24);
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
 .tracks-section h3 {
   font-size: var(--font-size-2xl);
   margin-bottom: var(--spacing-xl);
@@ -307,7 +483,7 @@ const endReasonText = computed(() => {
 
 .track-result {
   display: grid;
-  grid-template-columns: 50px 1fr 1fr 100px;
+  grid-template-columns: 50px 1fr 1fr;
   gap: var(--spacing-lg);
   align-items: center;
   padding: var(--spacing-lg);
@@ -375,15 +551,29 @@ const endReasonText = computed(() => {
   color: var(--color-error);
 }
 
+.answer-and-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.answer-text {
+  font-size: var(--font-size-sm);
+  color: var(--spotify-white);
+  font-style: italic;
+  flex: 1;
+}
+
 .track-stats {
-  text-align: center;
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
 }
 
 .points {
   font-size: var(--font-size-lg);
   font-weight: 700;
   color: var(--spotify-green);
-  margin-bottom: var(--spacing-xs);
 }
 
 .time {

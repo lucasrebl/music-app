@@ -6,6 +6,8 @@
       :results="gameResults.results"
       :end-reason="gameResults.endReason"
       :settings="gameSettings"
+      :selected-playlists="savedSources?.playlists"
+      :selected-artists="savedSources?.artists"
       @new-game="startNewGame"
       @back-to-home="goHome"
     />
@@ -30,6 +32,7 @@ import type {
   TrackResult,
   GameEndReason
 } from '@/types/blindTest'
+import type { DeezerPlaylist, DeezerArtist } from '@/services/deezerService'
 import { DEFAULT_GAME_SETTINGS } from '@/types/blindTest'
 
 const router = useRouter()
@@ -41,6 +44,8 @@ const gameResults = ref<{
   endReason: GameEndReason
 } | null>(null)
 
+const savedSources = ref<{ playlists?: DeezerPlaylist[]; artists?: DeezerArtist[] } | null>(null)
+
 const gameSettings = ref<GameSettingsType | null>(null)
 
 onMounted(() => {
@@ -51,6 +56,15 @@ onMounted(() => {
 
     if (savedResults) {
       gameResults.value = JSON.parse(savedResults)
+    }
+
+    const savedSourcesRaw = localStorage.getItem('blindTestSources')
+    if (savedSourcesRaw) {
+      try {
+        savedSources.value = JSON.parse(savedSourcesRaw)
+      } catch (e) {
+        savedSources.value = null
+      }
     }
 
     if (savedSettings) {

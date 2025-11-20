@@ -78,7 +78,7 @@
           <div
             v-for="playlist in searchResults"
             :key="playlist.id"
-            :class="['playlist-card', { selected: selectedPlaylist?.id === playlist.id }]"
+            :class="['playlist-card', { selected: isPlaylistSelected(playlist) }]"
             @click="selectPlaylist(playlist)"
           >
             <img :src="playlist.picture_medium" :alt="playlist.title" />
@@ -108,7 +108,7 @@
           <div
             v-for="artist in artistResults"
             :key="artist.id"
-            class="artist-card"
+            :class="['artist-card', { selected: isArtistSelected(artist) }]"
             @click="selectArtist(artist)"
           >
             <img :src="artist.picture_medium" :alt="artist.name" />
@@ -122,24 +122,38 @@
       </div>
     </div>
 
-    <!-- Playlist sélectionnée -->
-    <div v-if="selectedPlaylist" class="selected-playlist">
-      <h3>Playlist sélectionnée</h3>
-      <div class="playlist-preview">
-        <img :src="selectedPlaylist.picture_medium" :alt="selectedPlaylist.title" />
-        <div class="playlist-details">
-          <h4>{{ selectedPlaylist.title }}</h4>
-          <p>{{ selectedPlaylist.nb_tracks }} titres • {{ formatDuration(selectedPlaylist.duration) }}</p>
-          <small v-if="selectedPlaylist.description">{{ selectedPlaylist.description }}</small>
+    <!-- Sources sélectionnées (playlists + artistes) -->
+    <div v-if="selectedPlaylists.length || selectedArtists.length" class="selected-playlist">
+      <h3>Sources sélectionnées</h3>
+
+      <div class="playlist-preview" v-if="selectedPlaylists.length">
+        <div v-for="pl in selectedPlaylists" :key="pl.id" style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+          <img :src="pl.picture_small" :alt="pl.title" style="width:56px;height:56px;object-fit:cover;border-radius:6px;" />
+          <div style="flex:1;">
+            <div style="font-weight:600;color:var(--spotify-white)">{{ pl.title }}</div>
+            <div style="color:var(--spotify-light-gray);font-size:13px">{{ pl.nb_tracks }} titres</div>
+          </div>
+          <button class="btn btn-secondary" @click="removeSelectedPlaylist(pl.id)">Suppr</button>
         </div>
       </div>
-      
+
+      <div class="playlist-preview" v-if="selectedArtists.length">
+        <div v-for="art in selectedArtists" :key="art.id" style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+          <img :src="art.picture_small" :alt="art.name" style="width:56px;height:56px;object-fit:cover;border-radius:6px;" />
+          <div style="flex:1;">
+            <div style="font-weight:600;color:var(--spotify-white)">{{ art.name }}</div>
+            <div style="color:var(--spotify-light-gray);font-size:13px">{{ art.nb_fan }} fans</div>
+          </div>
+          <button class="btn btn-secondary" @click="removeSelectedArtist(art.id)">Suppr</button>
+        </div>
+      </div>
+
       <div class="playlist-actions">
         <button
           class="btn btn-secondary"
-          @click="selectedPlaylist = null"
+          @click="clearSelections"
         >
-          Changer
+          Effacer
         </button>
         <button
           class="btn btn-primary"
@@ -201,10 +215,11 @@ const searchResults = ref<DeezerPlaylist[]>([])
 const artistQuery = ref('')
 const artistResults = ref<DeezerArtist[]>([])
 
-// Sélection
-const selectedPlaylist = ref<DeezerPlaylist | null>(null)
-// Cache temporaire des tracks pour les playlists virtuelles (artistes)
-const cachedTracks = ref<DeezerTrack[] | null>(null)
+// Sélection (support multi-sélection)
+const selectedPlaylists = ref<DeezerPlaylist[]>([])
+const selectedArtists = ref<DeezerArtist[]>([])
+// Cache des tracks par artiste id pour éviter les re-fetch
+const artistTracks = ref<Record<number, DeezerTrack[]>>({})
 
 let searchTimeout: number | null = null
 let artistSearchTimeout: number | null = null
@@ -251,7 +266,9 @@ async function loadPlaylistFromUrl() {
       throw new Error('Cette playlist n\'est pas publique')
     }
     
-    selectedPlaylist.value = playlist
+    // ajouter la playlist sélectionnée à la liste (toggle)
+    const idx = selectedPlaylists.value.findIndex(p => p.id === playlist.id)
+    if (idx === -1) selectedPlaylists.value.push(playlist)
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Erreur lors du chargement de la playlist'
   } finally {
@@ -312,76 +329,126 @@ async function searchArtists() {
 }
 
 // Sélection playlist
-function selectPlaylist(playlist: DeezerPlaylist) {
-  selectedPlaylist.value = playlist
+function isPlaylistSelected(playlist: DeezerPlaylist) {
+  return selectedPlaylists.value.some(p => p.id === playlist.id)
 }
 
-// Sélection artiste (crée une playlist virtuelle avec les top tracks)
+function isArtistSelected(artist: DeezerArtist) {
+  return selectedArtists.value.some(a => a.id === artist.id)
+}
+
+function removeSelectedPlaylist(playlistId: number) {
+  const idx = selectedPlaylists.value.findIndex(p => p.id === playlistId)
+  if (idx !== -1) selectedPlaylists.value.splice(idx, 1)
+}
+
+function removeSelectedArtist(artistId: number) {
+  const idx = selectedArtists.value.findIndex(a => a.id === artistId)
+  if (idx !== -1) selectedArtists.value.splice(idx, 1)
+  delete artistTracks.value[artistId]
+}
+
+function selectPlaylist(playlist: DeezerPlaylist) {
+  const idx = selectedPlaylists.value.findIndex(p => p.id === playlist.id)
+  if (idx === -1) selectedPlaylists.value.push(playlist)
+  else selectedPlaylists.value.splice(idx, 1)
+}
+
+function clearSelections() {
+  selectedPlaylists.value = []
+  selectedArtists.value = []
+  artistTracks.value = {}
+}
+
+// Sélection artiste: toggle et cache des top tracks
 async function selectArtist(artist: DeezerArtist) {
-  loading.value = true
-  try {
-    const tracks = await deezerService.getArtistTopTracks(artist.id)
-    
-    if (tracks.length === 0) {
-      throw new Error('Aucun titre disponible pour cet artiste')
-    }
-    
-    // Créer une playlist virtuelle
-    const virtualPlaylist: DeezerPlaylist = {
-      id: -artist.id, // ID négatif pour différencier
-      title: `Top tracks - ${artist.name}`,
-      description: `Les meilleures chansons de ${artist.name}`,
-      duration: tracks.reduce((sum, track) => sum + track.duration, 0),
-      public: true,
-      nb_tracks: tracks.length,
-      picture: artist.picture,
-      picture_small: artist.picture_small,
-      picture_medium: artist.picture_medium,
-      picture_big: artist.picture_big,
-      creator: {
-        id: 0,
-        name: 'Music App'
+  const idx = selectedArtists.value.findIndex(a => a.id === artist.id)
+  if (idx === -1) {
+    // add
+    selectedArtists.value.push(artist)
+    loading.value = true
+    try {
+      const tracks = await deezerService.getArtistTopTracks(artist.id)
+      if (tracks.length === 0) {
+        throw new Error('Aucun titre disponible pour cet artiste')
       }
+      artistTracks.value[artist.id] = tracks
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Erreur lors de la récupération des titres d\'artiste'
+      const rem = selectedArtists.value.findIndex(a => a.id === artist.id)
+      if (rem !== -1) selectedArtists.value.splice(rem, 1)
+    } finally {
+      loading.value = false
     }
-    
-    selectedPlaylist.value = virtualPlaylist
-    // Shuffle cached tracks so virtual playlist order is random
-    cachedTracks.value = shuffleArray(tracks)
-    // Ne pas émettre directement — l'utilisateur doit cliquer sur "Commencer le jeu"
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Erreur lors de la sélection de l\'artiste'
-  } finally {
-    loading.value = false
+  } else {
+    // remove
+    selectedArtists.value.splice(idx, 1)
+    delete artistTracks.value[artist.id]
   }
 }
 
-// Confirmation de playlist
+// Confirmation des sources sélectionnées : agrège, déduplique, shuffle et émet
 async function confirmPlaylist() {
-  if (!selectedPlaylist.value) return
-  
-  loading.value = true
-  try {
-    let tracks: DeezerTrack[]
-    
-      if (selectedPlaylist.value.id < 0) {
-          // Playlist virtuelle d'artiste — utiliser les tracks en cache
-          tracks = cachedTracks.value ?? []
-        } else {
-          // Playlist normale, récupérer les tracks
-          tracks = await deezerService.getPlaylistTracks(selectedPlaylist.value.id)
-        }
+  const selectedCount = selectedPlaylists.value.length + selectedArtists.value.length
+  if (selectedCount === 0) {
+    error.value = 'Veuillez sélectionner au moins une playlist ou un artiste'
+    return
+  }
 
-      // Shuffle the final tracks list so each game has a random order
-      tracks = shuffleArray(tracks)
-    
-    if (tracks.length === 0) {
-      throw new Error('Cette playlist ne contient aucun titre avec aperçu disponible')
+  loading.value = true
+  error.value = ''
+  try {
+    const allTracks: DeezerTrack[] = []
+
+    // Récupérer les tracks des playlists sélectionnées
+    for (const pl of selectedPlaylists.value) {
+      const tracks = await deezerService.getPlaylistTracks(pl.id)
+      allTracks.push(...tracks)
     }
-    
-    // Émettre la sélection pour rediriger vers la page de jeu
-    emit('playlist-selected', { playlist: selectedPlaylist.value, tracks })
-    // Nettoyer le cache
-    cachedTracks.value = null
+
+    // Ajouter les tracks des artistes (depuis le cache si présent)
+    for (const art of selectedArtists.value) {
+      const tracks = artistTracks.value[art.id] ?? await deezerService.getArtistTopTracks(art.id)
+      allTracks.push(...tracks)
+    }
+
+    // Dédupliquer par id
+    const uniqueMap: Record<number, DeezerTrack> = {}
+    for (const t of allTracks) uniqueMap[t.id] = t
+    let combined = Object.values(uniqueMap)
+
+    // Shuffle et limiter au maxTracks
+    combined = shuffleArray(combined)
+    combined = combined.slice(0, gameSettings.value.maxTracks)
+
+    if (combined.length === 0) {
+      throw new Error('Aucune piste disponible avec aperçu dans les sources sélectionnées')
+    }
+
+    const virtualPlaylist: DeezerPlaylist = {
+      id: Date.now(),
+      title: `Mix — ${selectedPlaylists.value.length} playlists, ${selectedArtists.value.length} artistes`,
+      description: `Mix généré à partir des sources sélectionnées`,
+      duration: combined.reduce((s, t) => s + t.duration, 0),
+      public: true,
+      nb_tracks: combined.length,
+      picture: selectedPlaylists.value[0]?.picture || selectedArtists.value[0]?.picture || '',
+      picture_small: selectedPlaylists.value[0]?.picture_small || selectedArtists.value[0]?.picture_small || '',
+      picture_medium: selectedPlaylists.value[0]?.picture_medium || selectedArtists.value[0]?.picture_medium || '',
+      picture_big: selectedPlaylists.value[0]?.picture_big || selectedArtists.value[0]?.picture_big || '',
+      creator: { id: 0, name: 'Music App' }
+    }
+
+    // Persister comme avant
+    localStorage.setItem('blindTestPlaylist', JSON.stringify(virtualPlaylist))
+    localStorage.setItem('blindTestTracks', JSON.stringify(combined))
+    // Save selected sources so summary can show them
+    localStorage.setItem('blindTestSources', JSON.stringify({
+      playlists: selectedPlaylists.value,
+      artists: selectedArtists.value
+    }))
+
+    emit('playlist-selected', { playlist: virtualPlaylist, tracks: combined })
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Erreur lors du chargement des titres'
   } finally {
@@ -547,7 +614,7 @@ function formatDuration(seconds: number): string {
   color: var(--spotify-black);
 }
 
-.playlist-card.selected {
+.playlist-card.selected, .artist-card.selected {
   border-color: var(--spotify-green);
 }
 
