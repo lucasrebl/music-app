@@ -31,7 +31,7 @@ const services = [
     icon: '🎯',
     title: 'Blind Test',
     description: 'Testez vos connaissances musicales avec notre jeu de blind test connecté à Spotify. Devinez les artistes, albums et titres de vos playlists préférées !',
-    route: '/blind-test',
+    route: '/blind-test/settings',
     isAvailable: true,
     buttonText: 'Jouer maintenant'
   },
