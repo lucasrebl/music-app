@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
-import BlindTestView from '@/views/BlindTestView.vue'
-import BlindTestSettingsView from '@/views/BlindTestSettingsView.vue'
-import BlindTestGameView from '@/views/BlindTestGameView.vue'
-import BlindTestSummaryView from '@/views/BlindTestSummaryView.vue'
+import BlindTestView from '@/views/blind-test/BlindTestView.vue'
+import BlindTestSettingsView from '@/views/blind-test/BlindTestSettingsView.vue'
+import BlindTestGameView from '@/views/blind-test/BlindTestGameView.vue'
+import BlindTestSummaryView from '@/views/blind-test/BlindTestSummaryView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
