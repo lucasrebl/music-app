@@ -5,6 +5,51 @@
       <p>Choisissez la source musicale pour votre blind test</p>
     </div>
 
+    <!-- Sources sélectionnées (playlists + artistes) -->
+    <div v-if="selectedPlaylists.length || selectedArtists.length" class="selected-playlist">
+      <h3>Sources sélectionnées</h3>
+
+      <div class="sources-grid">
+        <div v-for="pl in selectedPlaylists" :key="`playlist-${pl.id}`" class="source-item">
+          <img :src="pl.picture_medium" :alt="pl.title" class="source-image">
+          <div class="source-info">
+            <h4 class="source-title">{{ pl.title }}</h4>
+            <p class="source-details">{{ pl.creator?.name }} • {{ pl.nb_tracks }} titres</p>
+          </div>
+          <button @click="removeSelectedPlaylist(pl.id)" class="remove-btn" title="Supprimer cette playlist">
+            ✕
+          </button>
+        </div>
+        
+        <div v-for="art in selectedArtists" :key="`artist-${art.id}`" class="source-item">
+          <img :src="art.picture_medium" :alt="art.name" class="source-image">
+          <div class="source-info">
+            <h4 class="source-title">{{ art.name }}</h4>
+            <p class="source-details">{{ art.nb_fan }} fans</p>
+          </div>
+          <button @click="removeSelectedArtist(art.id)" class="remove-btn" title="Supprimer cet artiste">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div class="playlist-actions">
+        <button
+          class="btn btn-secondary"
+          @click="clearSelections"
+        >
+          Effacer
+        </button>
+        <button
+          class="btn btn-primary"
+          @click="confirmPlaylist"
+          :disabled="loading || !areSettingsValid"
+        >
+          {{ loading ? 'Chargement...' : 'Valider et commencer le jeu' }}
+        </button>
+      </div>
+    </div>
+
     <!-- Tabs de sélection -->
     <div class="search-tabs">
       <button
@@ -122,49 +167,6 @@
       </div>
     </div>
 
-    <!-- Sources sélectionnées (playlists + artistes) -->
-    <div v-if="selectedPlaylists.length || selectedArtists.length" class="selected-playlist">
-      <h3>Sources sélectionnées</h3>
-
-      <div class="playlist-preview" v-if="selectedPlaylists.length">
-        <div v-for="pl in selectedPlaylists" :key="pl.id" style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-          <img :src="pl.picture_small" :alt="pl.title" style="width:56px;height:56px;object-fit:cover;border-radius:6px;" />
-          <div style="flex:1;">
-            <div style="font-weight:600;color:var(--spotify-white)">{{ pl.title }}</div>
-            <div style="color:var(--spotify-light-gray);font-size:13px">{{ pl.nb_tracks }} titres</div>
-          </div>
-          <button class="btn btn-secondary" @click="removeSelectedPlaylist(pl.id)">Suppr</button>
-        </div>
-      </div>
-
-      <div class="playlist-preview" v-if="selectedArtists.length">
-        <div v-for="art in selectedArtists" :key="art.id" style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-          <img :src="art.picture_small" :alt="art.name" style="width:56px;height:56px;object-fit:cover;border-radius:6px;" />
-          <div style="flex:1;">
-            <div style="font-weight:600;color:var(--spotify-white)">{{ art.name }}</div>
-            <div style="color:var(--spotify-light-gray);font-size:13px">{{ art.nb_fan }} fans</div>
-          </div>
-          <button class="btn btn-secondary" @click="removeSelectedArtist(art.id)">Suppr</button>
-        </div>
-      </div>
-
-      <div class="playlist-actions">
-        <button
-          class="btn btn-secondary"
-          @click="clearSelections"
-        >
-          Effacer
-        </button>
-        <button
-          class="btn btn-primary"
-          @click="confirmPlaylist"
-          :disabled="loading"
-        >
-          {{ loading ? 'Chargement des titres...' : 'Commencer le jeu' }}
-        </button>
-      </div>
-    </div>
-
     <!-- Messages d'erreur -->
     <div v-if="error" class="error-message">
       <p>{{ error }}</p>
@@ -200,6 +202,17 @@ const error = ref('')
 const isArtistTabDisabled = computed(() => {
   // Désactiver si seule la validation par artiste est cochée
   return !gameSettings.value.validateTitle && gameSettings.value.validateArtist
+})
+
+// Computed pour vérifier la validité des paramètres
+const areSettingsValid = computed(() => {
+  return (
+    gameSettings.value.targetScore >= 10 &&
+    gameSettings.value.targetScore <= 200 &&
+    gameSettings.value.maxTracks >= 5 &&
+    gameSettings.value.maxTracks <= 50 &&
+    (gameSettings.value.validateTitle || gameSettings.value.validateArtist)
+  )
 })
 
 // URL Tab
@@ -647,6 +660,7 @@ function formatDuration(seconds: number): string {
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-xl);
   border: 2px solid var(--spotify-green);
+  margin-bottom: var(--spacing-2xl);
 }
 
 .selected-playlist h3 {
@@ -655,17 +669,77 @@ function formatDuration(seconds: number): string {
   text-align: center;
 }
 
-.playlist-preview {
-  display: flex;
-  gap: var(--spacing-lg);
+.sources-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
 }
 
-.playlist-preview img {
-  width: 100px;
-  height: 100px;
+.source-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  background: var(--spotify-gray);
   border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  position: relative;
+}
+
+.source-image {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--border-radius-sm);
   object-fit: cover;
+  flex-shrink: 0;
+}
+
+.source-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.source-title {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--spotify-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.source-details {
+  margin: 0;
+  color: var(--spotify-light-gray);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.remove-btn {
+  background: var(--spotify-dark-gray);
+  color: var(--spotify-light-gray);
+  border: 1px solid var(--spotify-gray);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-size: 12px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.remove-btn:hover {
+  background: var(--color-error);
+  color: white;
+  border-color: var(--color-error);
+  transform: scale(1.1);
 }
 
 .playlist-details h4 {
@@ -722,9 +796,12 @@ function formatDuration(seconds: number): string {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
   
-  .playlist-preview {
-    flex-direction: column;
-    text-align: center;
+  .sources-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .source-item {
+    padding: var(--spacing-sm);
   }
   
   .playlist-actions {

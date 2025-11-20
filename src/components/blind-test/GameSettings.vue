@@ -83,7 +83,7 @@
 
 
 
-      <!-- Boutons d'action -->
+      <!-- Bouton d'action -->
       <div class="settings-actions">
         <button
           type="button"
@@ -91,15 +91,6 @@
           @click="resetToDefaults"
         >
           Réinitialiser
-        </button>
-        
-        <button
-          type="button"
-          class="btn btn-primary"
-          @click="saveSettings"
-          :disabled="!isFormValid"
-        >
-          Valider les paramètres
         </button>
       </div>
     </form>
@@ -117,7 +108,6 @@ interface Props {
 
 interface Emits {
   (e: 'update:settings', settings: GameSettings): void
-  (e: 'next'): void
 }
 
 const props = defineProps<Props>()
@@ -136,11 +126,22 @@ const isFormValid = computed(() => {
   )
 })
 
-// Watch les changements pour valider en temps réel
+// Watch les changements pour valider en temps réel et auto-save
 watch(localSettings, () => {
   // S'assurer qu'au moins une validation est cochée
   if (!localSettings.value.validateTitle && !localSettings.value.validateArtist) {
     localSettings.value.validateTitle = true
+  }
+  
+  // Auto-save settings if valid
+  if (isFormValid.value) {
+    const settingsWithFixedTiming = {
+      ...localSettings.value,
+      trackDuration: 30,        // 30 secondes par titre
+      showAnswerDelay: 3,       // 3 secondes d'affichage si trouvé
+      nextTrackDelay: 5         // 5 secondes avant piste suivante
+    }
+    emit('update:settings', settingsWithFixedTiming)
   }
 }, { deep: true })
 
@@ -151,20 +152,6 @@ function resetToDefaults() {
     trackDuration: 30,
     showAnswerDelay: 3,
     nextTrackDelay: 5
-  }
-}
-
-function saveSettings() {
-  if (isFormValid.value) {
-    // Forcer les valeurs de timing en dur
-    const settingsWithFixedTiming = {
-      ...localSettings.value,
-      trackDuration: 30,        // 30 secondes par titre
-      showAnswerDelay: 3,       // 3 secondes d'affichage si trouvé
-      nextTrackDelay: 5         // 5 secondes avant piste suivante
-    }
-    emit('update:settings', settingsWithFixedTiming)
-    emit('next')
   }
 }
 </script>
