@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
+import BlindTestView from '@/views/BlindTestView.vue'
 import BlindTestSettingsView from '@/views/BlindTestSettingsView.vue'
 import BlindTestPlaylistView from '@/views/BlindTestPlaylistView.vue'
 import BlindTestGameView from '@/views/BlindTestGameView.vue'
@@ -15,7 +16,8 @@ const router = createRouter({
     },
     {
       path: '/blind-test',
-      redirect: '/blind-test/settings'
+      name: 'blind-test',
+      component: BlindTestView,
     },
     {
       path: '/blind-test/settings',
