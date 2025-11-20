@@ -56,6 +56,10 @@
         </div>
       </div>
 
+      <ImportResults
+        @import-success="handleImportSuccess"
+      />
+
       <div class="cta-section">
         <div class="cta-buttons">
           <router-link to="/blind-test/settings" class="play-button">
@@ -79,7 +83,40 @@
 </template>
 
 <script setup lang="ts">
-// Simple landing page for Blind Test game mode
+import { useRouter } from 'vue-router'
+import ImportResults from '@/components/blind-test/ImportResults.vue'
+import type { TrackResult, GameEndReason, GameSettings } from '@/types/blindTest'
+import type { DeezerPlaylist, DeezerArtist } from '@/services/deezerService'
+
+const router = useRouter()
+
+interface GameData {
+  metadata: {
+    exportDate: string
+    gameVersion: string
+    appName: string
+  }
+  gameSettings: GameSettings
+  gameResults: {
+    finalScore: number
+    endReason: GameEndReason
+    results: TrackResult[]
+  }
+  sources: {
+    playlists: DeezerPlaylist[]
+    artists: DeezerArtist[]
+  }
+}
+
+function handleImportSuccess(data: GameData) {
+  // Sauvegarder les données importées dans localStorage
+  localStorage.setItem('blindTestResults', JSON.stringify(data.gameResults))
+  localStorage.setItem('blindTestSettings', JSON.stringify(data.gameSettings))
+  localStorage.setItem('blindTestSources', JSON.stringify(data.sources))
+  
+  // Rediriger vers la page de résumé
+  router.push('/blind-test/summary')
+}
 </script>
 
 <style scoped>

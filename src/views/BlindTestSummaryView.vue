@@ -8,7 +8,6 @@
       :settings="gameSettings"
       :selected-playlists="savedSources?.playlists"
       :selected-artists="savedSources?.artists"
-      @new-game="startNewGame"
       @back-to-home="goHome"
     />
     

@@ -24,6 +24,7 @@
 
     <SummaryActions
       @back-to-home="$emit('back-to-home')"
+      @download-results="downloadResults"
     />
   </div>
 </template>
@@ -53,8 +54,42 @@ interface Emits {
   (e: 'back-to-home'): void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 defineEmits<Emits>()
+
+function downloadResults() {
+  const gameData = {
+    metadata: {
+      exportDate: new Date().toISOString(),
+      gameVersion: '1.0.0',
+      appName: 'Music App - Blind Test'
+    },
+    gameSettings: props.settings,
+    gameResults: {
+      finalScore: props.finalScore,
+      endReason: props.endReason,
+      results: props.results
+    },
+    sources: {
+      playlists: props.selectedPlaylists || [],
+      artists: props.selectedArtists || []
+    }
+  }
+
+  const dataStr = JSON.stringify(gameData, null, 2)
+  const dataBlob = new Blob([dataStr], { type: 'application/json' })
+  
+  const url = URL.createObjectURL(dataBlob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `blind-test-results-${new Date().toISOString().split('T')[0]}.json`
+  
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  
+  URL.revokeObjectURL(url)
+}
 </script>
 
 <style scoped>
