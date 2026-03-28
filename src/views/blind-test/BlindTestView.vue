@@ -119,12 +119,10 @@ interface GameData {
 }
 
 function handleImportSuccess(data: GameData) {
-  // Sauvegarder les données importées dans localStorage
   localStorage.setItem('blindTestResults', JSON.stringify(data.gameResults))
   localStorage.setItem('blindTestSettings', JSON.stringify(data.gameSettings))
   localStorage.setItem('blindTestSources', JSON.stringify(data.sources))
   
-  // Rediriger vers la page de résumé
   router.push('/blind-test/summary')
 }
 </script>

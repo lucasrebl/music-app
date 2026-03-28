@@ -1,17 +1,14 @@
 <template>
   <main class="home">
     <div class="home-container">
-      <!-- Hero Section -->
       <section class="hero-section">
         <div class="hero-icon">🎵</div>
         <h1>Music App</h1>
         <p class="hero-subtitle">Découvrez la musique autrement avec nos services interactifs</p>
       </section>
 
-      <!-- Services Grid -->
       <section class="services-section">
         <div class="services-grid">
-          <!-- Blind Test Card -->
           <div class="service-card available">
             <div class="card-header">
               <div class="card-icon">🎯</div>
@@ -25,7 +22,6 @@
             </router-link>
           </div>
 
-          <!-- Coming Soon Card -->
           <div class="service-card coming-soon">
             <div class="card-header">
               <div class="card-icon">✨</div>
@@ -62,7 +58,6 @@ const router = useRouter()
   padding: var(--spacing-3xl) var(--spacing-lg);
 }
 
-/* Hero Section */
 .hero-section {
   text-align: center;
   margin-bottom: var(--spacing-3xl);
@@ -94,7 +89,6 @@ const router = useRouter()
   line-height: 1.5;
 }
 
-/* Services Section */
 .services-section {
   margin-bottom: var(--spacing-3xl);
 }
@@ -105,7 +99,6 @@ const router = useRouter()
   gap: var(--spacing-2xl);
 }
 
-/* Service Card */
 .service-card {
   display: flex;
   flex-direction: column;
@@ -281,7 +274,6 @@ const router = useRouter()
   transform: translateX(2px);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .home-container {
     padding: var(--spacing-2xl) var(--spacing-md);

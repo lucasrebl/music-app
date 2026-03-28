@@ -1,4 +1,3 @@
-// Types pour l'API Deezer
 export interface DeezerTrack {
   id: number
   title: string
@@ -60,13 +59,9 @@ export interface DeezerSearchResponse<T> {
 }
 
 class DeezerService {
-  // During development we proxy requests through Vite dev server at /api/deezer
-  // which forwards to https://api.deezer.com to avoid CORS issues.
   private readonly baseUrl = '/api/deezer'
 
-  /**
-   * Recherche d'artistes
-   */
+  //Recherche d'artistes
   async searchArtists(query: string): Promise<DeezerArtist[]> {
     try {
       const response = await fetch(`${this.baseUrl}/search/artist?q=${encodeURIComponent(query)}`)
@@ -114,30 +109,24 @@ class DeezerService {
     }
   }
 
-  /**
-   * Récupération des tracks d'une playlist
-   */
+  // Récupération des tracks d'une playlist
   async getPlaylistTracks(playlistId: number): Promise<DeezerTrack[]> {
     try {
-      // Request a larger limit to retrieve more tracks in a single call
       const response = await fetch(`${this.baseUrl}/playlist/${playlistId}/tracks?limit=100`)
       if (!response.ok) {
         throw new Error(`Erreur API Deezer: ${response.status}`)
       }
       const data: DeezerSearchResponse<DeezerTrack> = await response.json()
-      return data.data.filter(track => track.preview) // Filtre seulement les tracks avec preview
+      return data.data.filter(track => track.preview)
     } catch (error) {
       console.error('Erreur lors de la récupération des tracks:', error)
       throw error
     }
   }
 
-  /**
-   * Récupération des top tracks d'un artiste
-   */
+  // Récupération des top tracks d'un artiste
   async getArtistTopTracks(artistId: number): Promise<DeezerTrack[]> {
     try {
-      // Request more top tracks (use limit) to provide a larger virtual playlist
       const response = await fetch(`${this.baseUrl}/artist/${artistId}/top?limit=50`)
       if (!response.ok) {
         throw new Error(`Erreur API Deezer: ${response.status}`)
@@ -150,17 +139,13 @@ class DeezerService {
     }
   }
 
-  /**
-   * Parse une URL de playlist Deezer pour extraire l'ID
-   */
+  // Parse une URL de playlist Deezer pour extraire l'ID
   parsePlaylistUrl(url: string): number | null {
     const match = url.match(/playlist\/(\d+)/)
     return match && match[1] ? parseInt(match[1], 10) : null
   }
 
-  /**
-   * Validation d'une URL de playlist Deezer
-   */
+  // Validation d'une URL de playlist Deezer
   isValidPlaylistUrl(url: string): boolean {
     return /https?:\/\/(?:www\.)?deezer\.com\/[a-z]{2}\/playlist\/\d+/.test(url)
   }

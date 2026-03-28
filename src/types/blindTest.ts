@@ -2,14 +2,14 @@ import type { DeezerTrack, DeezerPlaylist } from '@/services/deezerService'
 
 // Configuration du jeu
 export interface GameSettings {
-  targetScore: number // Nombre de points pour gagner
-  maxTracks: number // Nombre maximum de titres
-  trackDuration: number // Durée de chaque piste en secondes (30s)
-  validateTitle: boolean // Valider le titre
-  validateArtist: boolean // Valider l'artiste
-  exactMatch: boolean // Correspondance exacte ou approximative
-  showAnswerDelay: number // Délai d'affichage de la réponse (3s si trouvé)
-  nextTrackDelay: number // Délai avant piste suivante (5s)
+  targetScore: number
+  maxTracks: number
+  trackDuration: number
+  validateTitle: boolean 
+  validateArtist: boolean
+  exactMatch: boolean
+  showAnswerDelay: number
+  nextTrackDelay: number
 }
 
 // État du jeu
@@ -33,12 +33,11 @@ export interface TrackResult {
   playerAnswer: string
   isCorrect: boolean
   points: number
-  timeToAnswer: number // en millisecondes
+  timeToAnswer: number
   correctAnswer: {
     title: string
     artist: string
   }
-  // Liste des essais (réponses incorrectes) entrées par le joueur pour cette piste
   attempts: string[]
 }
 
@@ -52,8 +51,8 @@ export interface GameSession {
   score: number
   results: TrackResult[]
   state: GameState
-  timeRemaining: number // Temps restant pour la piste courante
-  startTime: number | null // Timestamp du début de la piste
+  timeRemaining: number
+  startTime: number | null
   endReason: GameEndReason | null
   isMuted: boolean
 }
@@ -70,7 +69,7 @@ export interface ValidationResult {
   isCorrect: boolean
   titleMatch: boolean
   artistMatch: boolean
-  similarity: number // Score de similarité (0-1)
+  similarity: number
 }
 
 // Paramètres par défaut du jeu
@@ -127,29 +126,25 @@ function levenshteinDistance(str1: string, str2: string): number {
   const len1 = str1.length
   const len2 = str2.length
   
-  // Créer une matrice avec toutes les valeurs initialisées
   const matrix: number[][] = Array(len2 + 1).fill(null).map(() => Array(len1 + 1).fill(0))
   
-  // Initialiser la première colonne
   for (let i = 0; i <= len2; i++) {
     matrix[i]![0] = i
   }
   
-  // Initialiser la première ligne
   for (let j = 0; j <= len1; j++) {
     matrix[0]![j] = j
   }
   
-  // Remplir la matrice
   for (let i = 1; i <= len2; i++) {
     for (let j = 1; j <= len1; j++) {
       if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
         matrix[i]![j] = matrix[i - 1]![j - 1]!
       } else {
         matrix[i]![j] = Math.min(
-          matrix[i - 1]![j - 1]! + 1, // substitution
-          matrix[i]![j - 1]! + 1,     // insertion
-          matrix[i - 1]![j]! + 1      // suppression
+          matrix[i - 1]![j - 1]! + 1,
+          matrix[i]![j - 1]! + 1,
+          matrix[i - 1]![j]! + 1
         )
       }
     }

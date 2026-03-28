@@ -11,7 +11,6 @@
       @quit-game="quit"
     />
     
-    <!-- Message d'erreur si les résultats ne sont pas disponibles -->
     <div v-else class="error-state">
       <h2>Aucun résultat disponible</h2>
       <p>Les résultats de la partie ne sont pas disponibles.</p>
@@ -36,7 +35,6 @@ import { DEFAULT_GAME_SETTINGS } from '@/types/blindTest'
 
 const router = useRouter()
 
-// État des résultats
 const gameResults = ref<{
   score: number
   results: TrackResult[]
@@ -48,7 +46,6 @@ const savedSources = ref<{ playlists?: DeezerPlaylist[]; artists?: DeezerArtist[
 const gameSettings = ref<GameSettingsType | null>(null)
 
 onMounted(() => {
-  // Charger les résultats depuis localStorage
   try {
     const savedResults = localStorage.getItem('blindTestResults')
     const savedSettings = localStorage.getItem('blindTestSettings')
@@ -72,7 +69,6 @@ onMounted(() => {
       gameSettings.value = { ...DEFAULT_GAME_SETTINGS }
     }
 
-    // Si aucun résultat, rediriger vers les paramètres
     if (!gameResults.value) {
       router.push('/blind-test/settings')
     }
@@ -83,14 +79,12 @@ onMounted(() => {
 })
 
 function quit() {
-  // Nettoyer toutes les données
   localStorage.removeItem('blindTestResults')
   localStorage.removeItem('blindTestPlaylist')
   localStorage.removeItem('blindTestTracks')
   localStorage.removeItem('blindTestSettings')
   localStorage.removeItem('blindTestSources')
   
-  // Rediriger vers la page blind-test
   router.push('/blind-test')
 }
 </script>

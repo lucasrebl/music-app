@@ -123,7 +123,6 @@ const buttonClass = computed(() =>
   font-weight: 600;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .service-card {
     padding: var(--spacing-lg);

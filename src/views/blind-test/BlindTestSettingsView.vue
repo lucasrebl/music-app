@@ -35,10 +35,8 @@ import { DEFAULT_GAME_SETTINGS } from '@/types/blindTest'
 
 const router = useRouter()
 
-// Configuration du jeu (stockée globalement via localStorage ou store)
 const gameSettings = ref<GameSettingsType>({ ...DEFAULT_GAME_SETTINGS })
 
-// Charger les paramètres depuis localStorage au montage
 const savedSettings = localStorage.getItem('blindTestSettings')
 if (savedSettings) {
   try {
@@ -50,21 +48,17 @@ if (savedSettings) {
 
 function updateSettings(settings: GameSettingsType) {
   gameSettings.value = { ...settings }
-  // Sauvegarder les paramètres
   localStorage.setItem('blindTestSettings', JSON.stringify(settings))
 }
 
 function onPlaylistSelected(data: { playlist: DeezerPlaylist, tracks: DeezerTrack[] }) {
-  // Sauvegarder la playlist et les tracks sélectionnées
   localStorage.setItem('blindTestPlaylist', JSON.stringify(data.playlist))
   localStorage.setItem('blindTestTracks', JSON.stringify(data.tracks))
   
-  // Rediriger vers le jeu
   router.push('/blind-test/game')
 }
 
 function goToSettings() {
-  // Faire défiler vers la colonne des paramètres
   const settingsColumn = document.querySelector('.settings-column')
   if (settingsColumn) {
     settingsColumn.scrollIntoView({ behavior: 'smooth', block: 'start' })

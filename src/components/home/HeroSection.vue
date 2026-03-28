@@ -56,7 +56,6 @@ defineProps<Props>()
   margin: 0 auto var(--spacing-xl);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .hero-title {
     font-size: var(--font-size-4xl);

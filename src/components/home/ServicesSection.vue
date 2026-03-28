@@ -59,7 +59,6 @@ defineProps<Props>()
   gap: var(--spacing-xl);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .services-title {
     font-size: var(--font-size-3xl);
