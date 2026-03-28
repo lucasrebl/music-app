@@ -34,6 +34,9 @@ const router = createRouter({
       component: BlindTestSummaryView,
     }
   ],
+  scrollBehavior() {
+    return { top: 0 }
+  },
 })
 
 export default router
