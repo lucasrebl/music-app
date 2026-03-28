@@ -2,6 +2,8 @@
 
 Une application web interactive de blind test musical développée avec Vue.js 3 et TypeScript.
 
+🚀 **[Essayer l'application en ligne](https://music-blind-test.netlify.app/)**
+
 ![Vue.js](https://img.shields.io/badge/Vue.js-3.5-4FC08D?style=flat-square&logo=vue.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-7.1-646CFF?style=flat-square&logo=vite&logoColor=white)
