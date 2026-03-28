@@ -36,7 +36,7 @@
       </label>
       <small>
         {{ localExactMatch 
-          ? 'La réponse doit être exactement identique' 
+          ? 'La réponse doit être identique au titre/artiste de Deezer' 
           : 'Réponses approximatives acceptées (70% de similarité)' 
         }}
       </small>

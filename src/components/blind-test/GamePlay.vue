@@ -297,8 +297,7 @@ function toggleMute() {
 }
 
 function stopGame() {
-  cleanup()
-  emit('game-stopped')
+  finishGame('player_stopped')
 }
 
 function finishGame(reason: GameEndReason) {

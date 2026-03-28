@@ -1,7 +1,6 @@
 <template>
   <main class="blind-test-settings">
     <div class="settings-container">
-      <!-- Colonne de gauche : paramètres -->
       <div class="settings-column">
         <GameSettings
           :settings="gameSettings"
@@ -9,7 +8,6 @@
         />
       </div>
       
-      <!-- Colonne de droite : sélection de playlist -->
       <div class="playlist-column">
         <PlaylistSearch
           @playlist-selected="onPlaylistSelected"
@@ -18,7 +16,6 @@
       </div>
     </div>
     
-    <!-- Bouton de retour -->
     <div class="back-navigation">
       <router-link to="/blind-test" class="back-button">
         ← Retour

@@ -6,7 +6,6 @@
       :tracks="selectedTracks"
       :playlist="selectedPlaylist"
       @game-finished="onGameFinished"
-      @game-stopped="onGameStopped"
     />
     
     <!-- Message d'erreur si les données ne sont pas disponibles -->
@@ -93,13 +92,6 @@ function onGameFinished(data: {
   // S'assurer que le jeu est bien arrêté avant de rediriger
   setTimeout(() => {
     router.push('/blind-test/summary')
-  }, 100)
-}
-
-function onGameStopped() {
-  // S'assurer que le jeu est bien arrêté avant de rediriger
-  setTimeout(() => {
-    router.push('/blind-test/settings')
   }, 100)
 }
 </script>
