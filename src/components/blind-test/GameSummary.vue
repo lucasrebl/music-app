@@ -23,7 +23,7 @@
     />
 
     <SummaryActions
-      @back-to-home="$emit('back-to-home')"
+      @quit-game="$emit('quit-game')"
       @download-results="downloadResults"
     />
   </div>
@@ -51,7 +51,7 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'back-to-home'): void
+  (e: 'quit-game'): void
 }
 
 const props = defineProps<Props>()

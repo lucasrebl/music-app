@@ -1,19 +1,11 @@
 <template>
   <div class="summary-actions">
-    <div class="primary-actions">
-      <router-link
-        to="/blind-test/settings"
-        class="btn btn-secondary"
-      >
-        🔄 Nouvelle partie
-      </router-link>
-      <button
-        class="btn btn-primary"
-        @click="$emit('back-to-home')"
-      >
-        🏠 Retour à l'accueil
-      </button>
-    </div>
+    <button
+      class="btn btn-primary"
+      @click="$emit('quit-game')"
+    >
+      ✕ Quitter
+    </button>
     
     <div class="secondary-actions">
       <button
@@ -29,7 +21,7 @@
 
 <script setup lang="ts">
 interface Emits {
-  (e: 'back-to-home'): void
+  (e: 'quit-game'): void
   (e: 'download-results'): void
 }
 
@@ -42,12 +34,6 @@ defineEmits<Emits>()
   flex-direction: column;
   gap: var(--spacing-lg);
   align-items: center;
-}
-
-.primary-actions {
-  display: flex;
-  gap: var(--spacing-lg);
-  justify-content: center;
 }
 
 .secondary-actions {
@@ -75,10 +61,6 @@ defineEmits<Emits>()
 
 /* Responsive */
 @media (max-width: 768px) {
-  .primary-actions {
-    flex-direction: column;
-  }
-  
   .summary-actions .btn {
     min-width: auto;
   }

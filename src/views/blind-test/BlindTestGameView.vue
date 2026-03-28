@@ -71,9 +71,15 @@ onMounted(() => {
       selectedTracks.value = JSON.parse(savedTracks)
     }
 
-    // Si les données essentielles manquent, rediriger
+    // Si les données essentielles manquent, nettoyer et rediriger
     if (!selectedPlaylist.value || selectedTracks.value.length === 0) {
-      router.push('/blind-test/playlist')
+      // Nettoyer les données incomplètes pour éviter les bugs
+      localStorage.removeItem('blindTestPlaylist')
+      localStorage.removeItem('blindTestTracks')
+      localStorage.removeItem('blindTestSources')
+      localStorage.removeItem('blindTestResults')
+      localStorage.removeItem('blindTestSettings')
+      router.push('/blind-test')
     }
   } catch (error) {
     console.error('Erreur lors du chargement des données de jeu:', error)

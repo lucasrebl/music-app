@@ -8,7 +8,7 @@
       :settings="gameSettings"
       :selected-playlists="savedSources?.playlists"
       :selected-artists="savedSources?.artists"
-      @back-to-home="goHome"
+      @quit-game="quit"
     />
     
     <!-- Message d'erreur si les résultats ne sont pas disponibles -->
@@ -82,24 +82,16 @@ onMounted(() => {
   }
 })
 
-function startNewGame() {
-  // Nettoyer les données de la partie précédente mais garder les paramètres
-  localStorage.removeItem('blindTestResults')
-  localStorage.removeItem('blindTestPlaylist')
-  localStorage.removeItem('blindTestTracks')
-  
-  // Retourner à la sélection de playlist
-  router.push('/blind-test/playlist')
-}
-
-function goHome() {
+function quit() {
   // Nettoyer toutes les données
   localStorage.removeItem('blindTestResults')
   localStorage.removeItem('blindTestPlaylist')
   localStorage.removeItem('blindTestTracks')
   localStorage.removeItem('blindTestSettings')
+  localStorage.removeItem('blindTestSources')
   
-  router.push('/')
+  // Rediriger vers la page blind-test
+  router.push('/blind-test')
 }
 </script>
 
