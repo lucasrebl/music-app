@@ -1,83 +1,93 @@
 <template>
   <main class="blind-test">
-    <!-- Page d'accueil Blind Test -->
     <div class="blind-test-home">
-      <div class="hero-section">
+      <section class="hero-section">
         <div class="hero-icon">🎵</div>
         <h1>Blind Test Musical</h1>
         <p class="hero-subtitle">Testez vos connaissances musicales avec des extraits de vos playlists préférées</p>
-      </div>
+      </section>
 
-      <div class="game-explanation">
-        <h2>Comment jouer ?</h2>
-        <div class="rules-grid">
-          <div class="rule-card">
-            <div class="rule-icon">🎯</div>
-            <h3>Objectif</h3>
-            <p>Devinez le titre ou l'artiste des morceaux qui passent pour gagner des points</p>
+      <section class="primary-cta">
+        <router-link to="/blind-test/settings" class="play-button">
+          <span class="play-icon">🎮</span>
+          <span class="play-text">
+            <span class="play-title">Commencer à jouer</span>
+            <span class="play-subtitle">Configurez votre partie</span>
+          </span>
+        </router-link>
+      </section>
+
+      <section class="import-section">
+        <h2>Voir les résultats d'une partie précédente</h2>
+        <ImportResults
+          @import-success="handleImportSuccess"
+        />
+      </section>
+
+      <section class="game-info">
+        <div class="info-container">
+          <div class="info-column">
+            <h2>Le Gameplay</h2>
+            <div class="info-list">
+              <div class="info-item">
+                <span class="info-icon">🎯</span>
+                <div class="info-content">
+                  <h4>Devinez les chansons</h4>
+                  <p>Écoutez et identifiez le titre ou l'artiste</p>
+                </div>
+              </div>
+              <div class="info-item">
+                <span class="info-icon">⏱️</span>
+                <div class="info-content">
+                  <h4>Contre la montre</h4>
+                  <p>30 secondes par titre pour répondre</p>
+                </div>
+              </div>
+              <div class="info-item">
+                <span class="info-icon">🏆</span>
+                <div class="info-content">
+                  <h4>Gagnez des points</h4>
+                  <p>Plus vite vous répondez, plus vous gagnez (1-10 points)</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="rule-card">
-            <div class="rule-icon">⏱️</div>
-            <h3>Temps limité</h3>
-            <p>Vous avez 30 secondes par titre pour donner votre réponse</p>
-          </div>
-          <div class="rule-card">
-            <div class="rule-icon">🏆</div>
-            <h3>Points</h3>
-            <p>Plus vous répondez vite, plus vous gagnez de points (1 à 10 points par bonne réponse)</p>
-          </div>
-          <div class="rule-card">
-            <div class="rule-icon">🎼</div>
-            <h3>Sources</h3>
-            <p>Choisissez parmi vos playlists Deezer favorites ou sélectionnez des artistes spécifiques</p>
+
+          <div class="info-column">
+            <h2>Vos Avantages</h2>
+            <div class="info-list">
+              <div class="info-item">
+                <span class="info-icon">✨</span>
+                <div class="info-content">
+                  <h4>Vos playlists</h4>
+                  <p>Jouez avec vos morceaux préférés</p>
+                </div>
+              </div>
+              <div class="info-item">
+                <span class="info-icon">🎲</span>
+                <div class="info-content">
+                  <h4>Ordre aléatoire</h4>
+                  <p>Toujours du nouveau à chaque partie</p>
+                </div>
+              </div>
+              <div class="info-item">
+                <span class="info-icon">📊</span>
+                <div class="info-content">
+                  <h4>Statistiques</h4>
+                  <p>Suivez vos performances et progressez</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="game-features">
-        <h2>Fonctionnalités</h2>
-        <div class="features-list">
-          <div class="feature-item">
-            <span class="feature-icon">✨</span>
-            <span>Sélection multiple de playlists et d'artistes</span>
-          </div>
-          <div class="feature-item">
-            <span class="feature-icon">🎲</span>
-            <span>Ordre aléatoire des titres à chaque partie</span>
-          </div>
-          <div class="feature-item">
-            <span class="feature-icon">📊</span>
-            <span>Statistiques détaillées en fin de partie</span>
-          </div>
-          <div class="feature-item">
-            <span class="feature-icon">⚙️</span>
-            <span>Paramètres personnalisables (durée, nombre de titres, validation)</span>
-          </div>
-        </div>
-      </div>
-
-      <ImportResults
-        @import-success="handleImportSuccess"
-      />
-
-      <div class="cta-section">
-        <div class="cta-buttons">
-          <router-link to="/blind-test/settings" class="play-button">
-            <span class="play-icon">🎮</span>
-            <span class="play-text">
-              <span class="play-title">Commencer à jouer</span>
-              <span class="play-subtitle">Configurez votre partie</span>
-            </span>
-          </router-link>
-          
-          <div class="secondary-actions">
-            <router-link to="/" class="back-link">
-              <span class="back-icon">🏠</span>
-              <span>Retour à l'accueil</span>
-            </router-link>
-          </div>
-        </div>
-      </div>
+      <section class="footer-actions">
+        <router-link to="/" class="back-link">
+          <span class="back-icon">🏠</span>
+          <span>Retour à l'accueil</span>
+        </router-link>
+      </section>
     </div>
   </main>
 </template>
@@ -127,26 +137,28 @@ function handleImportSuccess(data: GameData) {
 }
 
 .blind-test-home {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: var(--spacing-3xl) var(--spacing-lg);
 }
 
 .hero-section {
   text-align: center;
-  margin-bottom: var(--spacing-4xl);
+  margin-bottom: var(--spacing-3xl);
+  padding-bottom: var(--spacing-2xl);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .hero-icon {
-  font-size: 4rem;
-  margin-bottom: var(--spacing-lg);
+  font-size: 3.5rem;
+  margin-bottom: var(--spacing-md);
   filter: drop-shadow(0 0 20px rgba(29, 185, 84, 0.4));
 }
 
 .hero-section h1 {
   font-size: var(--font-size-4xl);
   font-weight: 700;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
   background: linear-gradient(135deg, var(--spotify-white) 0%, var(--spotify-green) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -154,117 +166,18 @@ function handleImportSuccess(data: GameData) {
 }
 
 .hero-subtitle {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-base);
   color: var(--spotify-light-gray);
   max-width: 600px;
   margin: 0 auto;
-  line-height: 1.6;
-}
-
-.game-explanation {
-  margin-bottom: var(--spacing-4xl);
-}
-
-.game-explanation h2 {
-  font-size: var(--font-size-2xl);
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: var(--spacing-2xl);
-  color: var(--spotify-green);
-}
-
-.rules-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-2xl);
-}
-
-.rule-card {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-xl);
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.rule-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(29, 185, 84, 0.2);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-}
-
-.rule-icon {
-  font-size: 2.5rem;
-  margin-bottom: var(--spacing-md);
-  display: block;
-}
-
-.rule-card h3 {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  margin-bottom: var(--spacing-sm);
-  color: var(--spotify-white);
-}
-
-.rule-card p {
-  color: var(--spotify-light-gray);
   line-height: 1.5;
-  font-size: var(--font-size-sm);
 }
 
-.game-features {
-  margin-bottom: var(--spacing-5xl);
-}
-
-.game-features h2 {
-  font-size: var(--font-size-2xl);
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: var(--spacing-2xl);
-  color: var(--spotify-green);
-}
-
-.features-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--spacing-md);
-}
-
-.feature-item {
+.primary-cta {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
-  background: rgba(255, 255, 255, 0.01);
-  border-radius: var(--border-radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  transition: all 0.2s ease;
-}
-
-.feature-item:hover {
-  background: rgba(255, 255, 255, 0.02);
-  border-color: rgba(29, 185, 84, 0.1);
-}
-
-.feature-icon {
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
-.cta-section {
-  text-align: center;
-  margin-top: var(--spacing-5xl);
-  padding: var(--spacing-2xl);
-}
-
-.cta-buttons {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-xl);
+  justify-content: center;
+  margin-bottom: var(--spacing-3xl);
+  padding: var(--spacing-2xl) 0;
 }
 
 .play-button {
@@ -332,13 +245,91 @@ function handleImportSuccess(data: GameData) {
   line-height: 1.2;
 }
 
-.secondary-actions {
+.import-section {
+  margin-bottom: var(--spacing-3xl);
+  padding: var(--spacing-2xl);
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--border-radius-lg);
+}
+
+.import-section h2 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--spacing-lg);
+  color: var(--spotify-green);
+  text-align: center;
+}
+
+.game-info {
+  margin-bottom: var(--spacing-3xl);
+}
+
+.info-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--spacing-2xl);
+}
+
+.info-column h2 {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin-bottom: var(--spacing-lg);
+  color: var(--spotify-green);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid rgba(29, 185, 84, 0.3);
+}
+
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.info-item {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.01);
+  border-radius: var(--border-radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  transition: all 0.2s ease;
+}
+
+.info-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(29, 185, 84, 0.15);
+  transform: translateX(4px);
+}
+
+.info-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.info-content {
+  flex: 1;
+}
+
+.info-content h4 {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--spotify-white);
+}
+
+.info-content p {
+  font-size: var(--font-size-sm);
+  color: var(--spotify-light-gray);
+  line-height: 1.4;
+}
+
+.footer-actions {
   display: flex;
   justify-content: center;
-  padding-top: var(--spacing-md);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  width: 100%;
-  max-width: 300px;
+  padding: var(--spacing-xl) 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .back-link {
@@ -367,42 +358,78 @@ function handleImportSuccess(data: GameData) {
   font-size: 1rem;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .blind-test-home {
     padding: var(--spacing-2xl) var(--spacing-md);
   }
-  
+
+  .hero-section {
+    margin-bottom: var(--spacing-2xl);
+    padding-bottom: var(--spacing-lg);
+  }
+
+  .hero-icon {
+    font-size: 2.5rem;
+  }
+
   .hero-section h1 {
     font-size: var(--font-size-3xl);
   }
-  
-  .rules-grid {
-    grid-template-columns: 1fr;
+
+  .hero-subtitle {
+    font-size: var(--font-size-sm);
   }
-  
-  .features-list {
-    grid-template-columns: 1fr;
+
+  .primary-cta {
+    margin-bottom: var(--spacing-2xl);
+    padding: var(--spacing-lg) 0;
   }
-  
-  .cta-section {
-    padding: var(--spacing-lg);
-  }
-  
+
   .play-button {
     padding: var(--spacing-lg) var(--spacing-2xl);
     gap: var(--spacing-md);
   }
-  
+
   .play-text {
     align-items: center;
   }
-  
+
   .play-title {
     font-size: var(--font-size-base);
   }
-  
+
   .play-subtitle {
+    font-size: var(--font-size-xs);
+  }
+
+  .import-section {
+    margin-bottom: var(--spacing-2xl);
+    padding: var(--spacing-lg);
+  }
+
+  .info-container {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+
+  .info-column h2 {
+    font-size: var(--font-size-lg);
+  }
+
+  .info-item {
+    padding: var(--spacing-sm) var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+
+  .info-icon {
+    font-size: 1.2rem;
+  }
+
+  .info-content h4 {
+    font-size: var(--font-size-sm);
+  }
+
+  .info-content p {
     font-size: var(--font-size-xs);
   }
 }

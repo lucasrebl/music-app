@@ -10,19 +10,12 @@
       title="Nos Services"
       :services="services"
     />
-
-    <AboutSection
-      title="À propos"
-      description="Music App utilise l'API Spotify pour vous offrir une expérience musicale riche et personnalisée. Nos services sont conçus pour les passionnés de musique qui souhaitent explorer, découvrir et s'amuser avec leur bibliothèque musicale."
-      :features="features"
-    />
   </main>
 </template>
 
 <script setup lang="ts">
 import HeroSection from '@/components/home/HeroSection.vue'
 import ServicesSection from '@/components/home/ServicesSection.vue'
-import AboutSection from '@/components/home/AboutSection.vue'
 
 // Data pour les services
 const services = [
@@ -58,30 +51,6 @@ const services = [
     description: 'Participez à des défis quotidiens et hebdomadaires, affrontez vos amis et grimpez dans les classements !',
     isAvailable: false,
     buttonText: 'Bientôt disponible'
-  }
-]
-
-// Data pour les fonctionnalités
-const features = [
-  {
-    id: 'spotify',
-    icon: '🔗',
-    text: 'Connexion Spotify'
-  },
-  {
-    id: 'games',
-    icon: '🎮',
-    text: 'Jeux interactifs'
-  },
-  {
-    id: 'modern',
-    icon: '📱',
-    text: 'Interface moderne'
-  },
-  {
-    id: 'evolution',
-    icon: '🚀',
-    text: 'Évolution continue'
   }
 ]
 </script>
