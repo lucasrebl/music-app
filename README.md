@@ -61,7 +61,7 @@ De nombreuses nouvelles fonctionnalités sont prévues pour enrichir l'expérien
 
 1. **Cloner le repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/lucasrebl/music-app.git
 cd music-app
 ```
 
