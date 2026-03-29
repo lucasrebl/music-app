@@ -165,7 +165,6 @@ src/
 - **API** : Deezer API pour récupérer les playlists et pistes
 - **Styling** : CSS scoped et responsive design
 - **Linting** : ESLint + Oxlint pour la qualité du code
-- **Utilitaires** : Lodash-es pour les manipulations de données
 
 ## 🎮 Comment Jouer
 
